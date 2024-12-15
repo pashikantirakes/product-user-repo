@@ -6,11 +6,10 @@ import com.example.ProductService.entity.Product;
 import com.example.ProductService.repo.ProductRepository;
 import com.example.ProductService.repo.User;
 import com.example.ProductService.repo.UserService;
-import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
-import io.github.resilience4j.retry.annotation.Retry;
 import org.modelmapper.ModelMapper;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -35,12 +34,13 @@ public class ProductController {
     }
 
     @GetMapping("/{name}")
+    @Transactional(readOnly = true)
     public ResponseEntity<Product>getProductByName(@PathVariable String name){
         return new ResponseEntity<>(repository.getProductByName(name), HttpStatus.OK);
     }
 
-    @PostMapping("/save")
 
+    @PostMapping("/save")
     //@Retry(name = "productRetry",fallbackMethod = "fallbackResponse")
     public ResponseEntity<ProductResponse> createProduct(@RequestBody ProductRequest product){
         ProductResponse pr = new ProductResponse();

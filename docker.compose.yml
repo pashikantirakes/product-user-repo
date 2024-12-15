@@ -1,0 +1,83 @@
+version : '3'
+
+## services
+
+services:
+  discovery-server:
+    image: rakesh/eureka-server:latest
+    ports:
+      - "8761:8761"
+    networks:
+      - v9pre
+  api-gateway:
+    image: rakesh/api-gateway:latest
+    ports:
+      - "9090:9090"
+    depends_on:
+      - discovery-server
+      - user-service
+      - product-service
+    environment:
+      EUREKA_CLIENT-SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
+    networks:
+      - v9pre
+
+  user-service:
+    image: rakesh/user-service:latest
+    ports:
+      - "8085:8085"
+    depends-on:
+      - discovery-server
+      - user-database
+    restart: always
+    environment:
+      EUREKA_CLIENT-SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:mysql://inventory-database:3306/gateway
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Rakesh.0438
+    networks:
+      - v9pre
+
+  product-service:
+    image: rakesh/product-service:latest
+    ports:
+      - "8086:8086"
+    depends_on:
+      - discovery-server
+      - product-database
+    restart:
+      always
+    environment:
+      EUREKA_CLIENT-SERVICEURL_DEFAULTZONE: http://localhost:8761/eureka
+      SPRING_DATASOURCE_URL: jdbc:mysql://inventory-database:3306/gateway
+      SPRING_DATASOURCE_USERNAME: root
+      SPRING_DATASOURCE_PASSWORD: Rakesh.0438
+    networks:
+      - v9pre
+
+##Databases :
+user-database:
+   image: my-sql
+   environment:
+     MYSQL_ROOT_PASSWORD: Rakesh.0438
+     MYSQL_DATABASE: gateway
+   ports:
+     - "3307:3306"
+   networks:
+     - v9pre
+
+product-database:
+  image: my-sql
+  environment:
+    MYSQL_ROOT_PASSWORD: Rakesh.0438
+    MYSQL_DATABASE: gateway
+  ports:
+    - "3307:3306"
+  networks:
+    - v9pre
+
+
+
+networks:
+  v9pre:
+    driver: bridge
